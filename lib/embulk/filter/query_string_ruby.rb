@@ -1,12 +1,11 @@
-require 'uri'
-require 'cgi'
+require "addressable/uri"
 
 module Embulk
   module Filter
 
     class QueryStringRuby < FilterPlugin
       Plugin.register_filter("query_string_ruby", self)
-      @pattern = "(\?|\&)([^=\n]+)\=([^&\n]+)"
+      @pattern = "((?!\&)|\&)([^=\n]+)\=([^&\n]+)"
 
       def self.transaction(config, in_schema, &control)
         task = {
@@ -33,7 +32,9 @@ module Embulk
 
       def add(page)
         page.each do |record|
-          query_parser(@query_params, record[@target_column["index"]])
+          q = query_parser(record[@target_column["index"]])
+          m = mapping(@query_params, q)
+	  puts(m)
           page_builder.add(record)
         end
       end
@@ -42,14 +43,34 @@ module Embulk
         page_builder.finish
       end
 
-      def query_parser(query_params, query_string)
-        uri = URI.unescape(query_string)
-        u = URI.parse(uri)
-        puts(query_string.match(/#{@pattern}/))
-        # if u.query
-        #   puts(u.query)
-        # end
-        # CGI.parse(q)
+      private
+
+      def query_parser(query_string)
+        begin
+          u = Addressable::URI.parse(query_string)
+          uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
+          return uri.query_values(Hash)
+        rescue ArgumentError
+          Embulk.logger.warn "Failed parse: #{line}"
+          return nil
+        end
+      end
+
+      def mapping(schema, query)
+        return query.map{|k, v|
+          begin
+            case schema[k]["type"]
+            when :long
+              Integer(v)
+            when :timestamp
+              Time.parse(v)
+            else
+              v.to_s
+            end
+          rescue => e
+            raise ConfigError.new("Cast failed '#{v}' as '#{schema[k]["type"]}' (key is '#{k}')")
+          end
+        }
       end
 
     end
