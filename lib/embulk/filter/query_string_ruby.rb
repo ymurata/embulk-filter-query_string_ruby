@@ -1,49 +1,57 @@
+require 'uri'
+require 'cgi'
+
 module Embulk
   module Filter
 
     class QueryStringRuby < FilterPlugin
       Plugin.register_filter("query_string_ruby", self)
+      @pattern = "(\?|\&)([^=\n]+)\=([^&\n]+)"
 
       def self.transaction(config, in_schema, &control)
-        # configuration code:
         task = {
-          "option1" => config.param("option1", :integer),                     # integer, required
-          "option2" => config.param("option2", :string, default: "myvalue"),  # string, optional
-          "option3" => config.param("option3", :string, default: nil),        # string, optional
+          "column" => config.param("column", :string),
+          "query_params" => config.param("query_params", :array, :default => []).inject({}){|a, c|
+            a[c["name"]] = {"type" => c["type"].to_sym, "format" => c['format']}
+            a
+          }
         }
-
-        columns = [
-          Column.new(nil, "example", :string),
-          Column.new(nil, "column", :long),
-          Column.new(nil, "value", :double),
-        ]
-
+        task["target_column"] = in_schema.find{|c| c.name == task["column"]}
+        idx = in_schema.size
+        columns = task['query_params'].map.with_index{|(name, c), i| Column.new(i+idx, name, c["type"], c["format"])}
         out_columns = in_schema + columns
-
         yield(task, out_columns)
       end
 
       def init
-        # initialization code:
-        @option1 = task["option1"]
-        @option2 = task["option2"]
-        @option3 = task["option3"]
+        @query_params = task["query_params"]
+        @target_column = task["target_column"]
       end
 
       def close
       end
 
       def add(page)
-        # filtering code:
-        add_columns = ["example",1,1.0]
         page.each do |record|
-          page_builder.add(record + add_columns)
+          query_parser(@query_params, record[@target_column["index"]])
+          page_builder.add(record)
         end
       end
 
       def finish
         page_builder.finish
       end
+
+      def query_parser(query_params, query_string)
+        uri = URI.unescape(query_string)
+        u = URI.parse(uri)
+        puts(query_string.match(/#{@pattern}/))
+        # if u.query
+        #   puts(u.query)
+        # end
+        # CGI.parse(q)
+      end
+
     end
 
   end
