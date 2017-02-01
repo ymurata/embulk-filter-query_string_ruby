@@ -1,0 +1,5 @@
+in:
+  type: file
+  path_prefix: "/Users/murata/repos/embulk-filter-query_string_ruby/example/csv/sample_"
+out:
+  type: stdout
