@@ -5,7 +5,6 @@ module Embulk
 
     class QueryStringRuby < FilterPlugin
       Plugin.register_filter("query_string_ruby", self)
-      @pattern = "((?!\&)|\&)([^=\n]+)\=([^&\n]+)"
 
       def self.transaction(config, in_schema, &control)
         task = {
@@ -33,9 +32,8 @@ module Embulk
       def add(page)
         page.each do |record|
           q = query_parser(record[@target_column["index"]])
-          m = mapping(@query_params, q)
-	  puts(m)
-          page_builder.add(record)
+          add_records = make_records(@query_params, q)
+          page_builder.add(record + add_records)
         end
       end
 
@@ -51,19 +49,21 @@ module Embulk
           uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
           return uri.query_values(Hash)
         rescue ArgumentError
-          Embulk.logger.warn "Failed parse: #{line}"
+          Embulk.logger.warn "Failed parse: #{query_string}"
           return nil
         end
       end
 
-      def mapping(schema, query)
-        return query.map{|k, v|
+      def make_records(schema, query)
+        return query.map{|name, v|
+          c = schema[name]
           begin
-            case schema[k]["type"]
-            when :long
-              Integer(v)
-            when :timestamp
-              Time.parse(v)
+            case c["type"]
+            when "long"
+              v.empty? ? nil : Integer(v)
+            when "timestamp"
+              puts(c)
+              v.empty? ? nil : Time.strptime(v, c["format"])
             else
               v.to_s
             end

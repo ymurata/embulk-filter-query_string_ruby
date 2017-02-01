@@ -1,6 +1,6 @@
 in:
   type: file
-  path_prefix: "/Users/murata/repos/embulk-filter-query_string_ruby/example/csv/sample_"
+  path_prefix: "/Users/yuma/repos/embulk-filter-query_string_ruby/example/csv/sample_"
 
 filters:
   - type: query_string_ruby
