@@ -9,7 +9,7 @@ TODO: Write short description here and embulk-filter-query_string_ruby.gemspec f
 ## Configuration
 
 - **column**: description (string, required)
-- **query_params**: description (array, default: `[]`, required)
+- **schema**: description (array, default: `[]`, required)
 
 ## Example
 
