@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.description   = "Query String Ruby"
   spec.email         = ["murata@ebisol.co.jp"]
   spec.licenses      = ["MIT"]
-  # TODO set this: spec.homepage      = "https://github.com/murata/embulk-filter-query_string_ruby"
+  spec.homepage      = "https://github.com/murata/embulk-filter-query_string_ruby"
 
   spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
   spec.test_files    = spec.files.grep(%r{^(test|spec)/})

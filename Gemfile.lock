@@ -8,11 +8,14 @@ GEM
   specs:
     addressable (2.5.0)
       public_suffix (~> 2.0, >= 2.0.2)
+    embulk (0.8.16)
+      jruby-jars (= 9.1.5.0)
     embulk (0.8.16-java)
       bundler (>= 1.10.6)
       liquid (~> 3.0.6)
       msgpack (~> 0.7.3)
       rjack-icu (~> 4.54.1.1)
+    jruby-jars (9.1.5.0)
     liquid (3.0.6)
     msgpack (0.7.6-java)
     public_suffix (2.0.5)
@@ -21,6 +24,7 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   addressable
@@ -30,4 +34,4 @@ DEPENDENCIES
   rake (>= 10.0)
 
 BUNDLED WITH
-   1.10.6
+   1.14.3
