@@ -1,11 +1,11 @@
 in:
   type: file
-  path_prefix: "/Users/yuma/repos/embulk-filter-query_string_ruby/example/csv/sample_"
+  path_prefix: "./example/csv/sample_"
 
 filters:
   - type: query_string_ruby
     column: query
-    query_params:
+    schema:
       - {name: hoge, type: string}
       - {name: fuga, type: long}
       - {name: piyo, type: timestamp, format: '%Y-%m-%d'}

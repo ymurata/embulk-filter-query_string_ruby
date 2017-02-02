@@ -8,21 +8,16 @@ module Embulk
 
       def self.transaction(config, in_schema, &control)
         task = {
-          "column" => config.param("column", :string),
-          "query_params" => config.param("query_params", :array, :default => []).inject({}){|a, c|
-            a[c["name"]] = {"type" => c["type"].to_sym, "format" => c['format']}
-            a
-          }
+          "target_column" => in_schema.find{|c| c.name == config.param("column", :string)},
+          "schema" => config.param("schema", :array, :default => [])
         }
-        task["target_column"] = in_schema.find{|c| c.name == task["column"]}
-        idx = in_schema.size
-        columns = task['query_params'].map.with_index{|(name, c), i| Column.new(i+idx, name, c["type"], c["format"])}
-        out_columns = in_schema + columns
+
+        out_columns = in_schema + task["schema"].map {|col| Column.new(nil, col["name"], col["type"].to_sym, col["format"])}
         yield(task, out_columns)
       end
 
       def init
-        @query_params = task["query_params"]
+        @schema = task["schema"]
         @target_column = task["target_column"]
       end
 
@@ -32,8 +27,8 @@ module Embulk
       def add(page)
         page.each do |record|
           q = query_parser(record[@target_column["index"]])
-          add_records = make_records(@query_params, q)
-          page_builder.add(record + add_records)
+          add_record = make_record(@schema, q)
+          page_builder.add(record + add_record)
         end
       end
 
@@ -44,33 +39,31 @@ module Embulk
       private
 
       def query_parser(query_string)
-        begin
-          u = Addressable::URI.parse(query_string)
-          uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
-          return uri.query_values(Hash)
-        rescue ArgumentError
-          Embulk.logger.warn "Failed parse: #{query_string}"
-          return nil
-        end
+        u = Addressable::URI.parse(query_string)
+        uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
+        return uri.query_values(Hash)
       end
 
-      def make_records(schema, query)
-        return query.map{|name, v|
-          c = schema[name]
-          begin
-            case c["type"]
-            when "long"
-              v.empty? ? nil : Integer(v)
-            when "timestamp"
-              puts(c)
-              v.empty? ? nil : Time.strptime(v, c["format"])
-            else
-              v.to_s
+      def make_record(schema, query)
+        return schema.map do |col|
+          v = query[col["name"]]
+          if v
+            begin
+              case col["type"]
+              when "long"
+                v.to_i
+              when "double"
+                v.to_f
+              when "timestamp"
+                Time.strptime(v, col["format"])
+              else
+                v.to_s
+              end
+            rescue => e
+              raise ConfigError.new("Cast failed '#{v}' as '#{col["type"]}' (query name is '#{col["name"]}')")
             end
-          rescue => e
-            raise ConfigError.new("Cast failed '#{v}' as '#{schema[k]["type"]}' (key is '#{k}')")
           end
-        }
+        end
       end
 
     end
