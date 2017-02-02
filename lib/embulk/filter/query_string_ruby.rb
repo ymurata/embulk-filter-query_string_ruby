@@ -12,7 +12,7 @@ module Embulk
           "schema" => config.param("schema", :array, :default => [])
         }
 
-        out_columns = in_schema + task["schema"].map {|col| Column.new(nil, col["name"], col["type"].to_sym, col["format"])}
+        out_columns = in_schema + task["schema"].map {|col| Column.new(nil, col["name"], col["type"].to_sym)}
         yield(task, out_columns)
       end
 
@@ -55,7 +55,7 @@ module Embulk
               when "double"
                 v.to_f
               when "timestamp"
-                Time.strptime(v, col["format"])
+                Time.parse(v)
               else
                 v.to_s
               end

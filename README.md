@@ -28,10 +28,10 @@ configuration
 filters:
   - type: query_string_ruby
     column: query_string
-    query_params: 
+    schema: 
       - {name: hoge, type: string}
       - {name: fuga, type: long}
-      - {name: piyo, type: timestamp, format: '%Y-%m-%d'}
+      - {name: piyo, type: timestamp}
 ```
 
 result
