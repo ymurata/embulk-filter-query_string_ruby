@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "embulk-filter-query_string_ruby"
-  spec.version       = "0.1.2"
+  spec.version       = "0.1.3"
   spec.authors       = ["Yuma Murata"]
   spec.summary       = "Query String Ruby filter plugin for Embulk"
   spec.description   = "Query String Ruby"
