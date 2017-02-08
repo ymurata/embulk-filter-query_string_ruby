@@ -1,4 +1,4 @@
-require "addressable/uri"
+require "addressable"
 
 module Embulk
   module Filter
