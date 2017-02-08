@@ -39,29 +39,36 @@ module Embulk
       private
 
       def query_parser(query_string)
-        u = Addressable::URI.parse(query_string)
-        uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
-        return uri.query_values(Hash)
+        begin
+          u = Addressable::URI.parse(query_string)
+          uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
+          uri.query_values(Hash)
+        rescue => e
+          Embulk.logger.warn("Parse failed '#{query_string}'")
+        end
       end
 
       def make_record(schema, query)
         return schema.map do |col|
           v = query[col["name"]]
-          if !v.to_s.empty?
-            begin
-              case col["type"]
-              when "long"
-                Integer(v)
-              when "double"
-                Float(v)
-              when "timestamp"
-                Time.parse(v)
-              else
-                v.to_s
-              end
-            rescue => e
-              Embulk.logger.warn("Cast failed '#{v}' as '#{col["type"]}' (query name is '#{col["name"]}')")
+
+          if v.to_s.empty?
+            next
+          end
+
+          begin
+            case col["type"]
+            when "long"
+              Integer(v)
+            when "double"
+              Float(v)
+            when "timestamp"
+              Time.parse(v)
+            else
+              v.to_s
             end
+          rescue => e
+            Embulk.logger.warn("Cast failed '#{v}' as '#{col["type"]}' (query name is '#{col["name"]}')")
           end
         end
       end
