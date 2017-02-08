@@ -5,10 +5,14 @@ in:
 filters:
   - type: query_string_ruby
     column: query
+    default_timezone: Asia/Tokyo
     schema:
       - {name: hoge, type: string}
       - {name: fuga, type: long}
-      - {name: piyo, type: timestamp, format: '%Y-%m-%d'}
+      - {name: piyo, type: timestamp}
+      - {name: userid, type: string}
+      - {name: tabid, type: long}
+      - {name: display_date, type: timestamp}
 
 out:
   type: stdout

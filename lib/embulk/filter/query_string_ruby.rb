@@ -8,6 +8,7 @@ module Embulk
 
       def self.transaction(config, in_schema, &control)
         task = {
+          "default_timezone" => config.param("default_timezone", :string, :default => "UTC"),
           "target_column" => in_schema.find{|c| c.name == config.param("column", :string)},
           "schema" => config.param("schema", :array, :default => [])
         }
@@ -19,6 +20,7 @@ module Embulk
       def init
         @schema = task["schema"]
         @target_column = task["target_column"]
+	ENV[task["default_timezone"]]
       end
 
       def close
