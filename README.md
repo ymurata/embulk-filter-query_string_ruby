@@ -1,15 +1,13 @@
 # Query String Ruby filter plugin for Embulk
 
-TODO: Write short description here and embulk-filter-query_string_ruby.gemspec file.
-
 ## Overview
 
 * **Plugin type**: filter
 
 ## Configuration
 
-- **column**: description (string, required)
-- **schema**: description (array, default: `[]`, required)
+- **column**: target column name (string, required)
+- **schema**: schema of query parameter (array, default: `[]`, required)
 
 ## Example
 
