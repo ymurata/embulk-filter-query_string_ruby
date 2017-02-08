@@ -51,16 +51,16 @@ module Embulk
             begin
               case col["type"]
               when "long"
-                v.to_i
+                Integer(v)
               when "double"
-                v.to_f
+                Float(v)
               when "timestamp"
                 Time.parse(v)
               else
                 v.to_s
               end
             rescue => e
-              raise ConfigError.new("Cast failed '#{v}' as '#{col["type"]}' (query name is '#{col["name"]}')")
+              Embulk.logger.warn("Cast failed '#{v}' as '#{col["type"]}' (query name is '#{col["name"]}')")
             end
           end
         end
