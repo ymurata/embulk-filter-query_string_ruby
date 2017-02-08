@@ -47,7 +47,7 @@ module Embulk
       def make_record(schema, query)
         return schema.map do |col|
           v = query[col["name"]]
-          if v
+          if !v.to_s.empty?
             begin
               case col["type"]
               when "long"
