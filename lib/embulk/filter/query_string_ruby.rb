@@ -42,10 +42,11 @@ module Embulk
         begin
           u = Addressable::URI.parse(query_string)
           uri = u.query ? u : Addressable::URI.parse("?#{query_string}")
-          return uri.query_values(Hash)
+          uri.query_values(Hash)
         rescue => e
           Embulk.logger.warn("Parse failed '#{query_string}'")
         end
+        uri.nil? ? {} || uri.query_values(Hash)
       end
 
       def make_record(schema, query)
